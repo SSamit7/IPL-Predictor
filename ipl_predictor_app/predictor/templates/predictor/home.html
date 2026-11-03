@@ -1,0 +1,65 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> IPL Chase Predictor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'predictor/style.css' %}">
+</head>
+<body>
+<div class="stadium-glow"></div>
+<header class="topbar"><a class="brand" href="/"><span class="brand-mark">S</span><span>Chase<span class="brand-accent">IQ</span></span></a><span class="top-tag"><i></i> IPL MATCH ANALYTICS</span></header>
+<main class="shell">
+  <section class="hero">
+    <div class="eyebrow"><span>THE CHASE STARTS HERE</span><b>●</b> MACHINE LEARNING</div>
+    <h1>READ THE GAME.<br><em>CALL THE CHASE.</em></h1>
+    <p>Put the match situation on the board. Let the model estimate who has the edge.</p>
+    <div class="hero-stats"><div><strong>20</strong><span>OVERS</span></div><div><strong>10</strong><span>WICKETS</span></div><div><strong>1</strong><span>PREDICTION</span></div></div>
+  </section>
+
+  <section class="predict-card">
+    <div class="card-heading"><div><span class="section-kicker">MATCH CENTRE / 01</span><h2>Set up your chase</h2></div><span class="live-pill"><i></i> PREDICT</span></div>
+    {% if error %}<div class="error-msg">{{ error }}</div>{% endif %}
+    <form method="post" id="predict-form">
+      {% csrf_token %}
+      <div class="team-grid">
+        <label class="field"><span class="field-label">BATTING / CHASING TEAM</span><select name="batting_team" required>{% for team in teams %}<option value="{{ team }}" {% if form_values.batting_team == team %}selected{% endif %}>{{ team }}</option>{% endfor %}</select></label>
+        <div class="versus">VS</div>
+        <label class="field"><span class="field-label">BOWLING / DEFENDING TEAM</span><select name="bowling_team" required>{% for team in teams %}<option value="{{ team }}" {% if form_values.bowling_team == team %}selected{% endif %}>{{ team }}</option>{% endfor %}</select></label>
+      </div>
+      <div class="form-grid">
+        <label class="field full"><span class="field-label">MATCH VENUE</span><select name="city" required>{% for city in cities %}<option value="{{ city }}" {% if form_values.city == city %}selected{% endif %}>{{ city }}</option>{% endfor %}</select></label>
+        <label class="field"><span class="field-label">TARGET SCORE</span><input name="target" type="number" min="1" max="400" placeholder="185" value="{{ form_values.target|default:'' }}" required></label>
+        <label class="field"><span class="field-label">CURRENT SCORE</span><input name="score" type="number" min="0" placeholder="92" value="{{ form_values.score|default:'' }}" required></label>
+        <label class="field"><span class="field-label">BALLS BOWLED <small>0–119</small></span><input name="balls_bowled" type="number" min="0" max="119" placeholder="60" value="{{ form_values.balls_bowled|default:'' }}" required></label>
+        <label class="field"><span class="field-label">WICKETS LOST <small>0–9</small></span><input name="wickets_lost" type="number" min="0" max="9" placeholder="3" value="{{ form_values.wickets_lost|default:'' }}" required></label>
+      </div>
+      <div class="calculation-note"><span class="note-icon">✦</span><span>Current run rate and required run rate are calculated automatically from your match situation.</span></div>
+      <button class="predict-btn" type="submit"><span>CALCULATE WIN PROBABILITY</span><b>↗</b></button>
+    </form>
+  </section>
+
+  {% if result %}
+  <section class="result-card" id="result">
+    <div class="result-top"><div><span class="section-kicker">MODEL OUTPUT / 02</span><h2>Chase probability</h2></div><span class="result-label">ESTIMATE</span></div>
+    <div class="probability-main"><div class="prob-number">{{ result.batting_probability }}<small>%</small></div><div class="prob-copy"><span>BATTING TEAM</span><strong>{{ result.batting_team }}</strong><small>Predicted chance of winning</small></div></div>
+    <div class="prob-track"><div class="batting-fill" style="width: {{ result.batting_probability }}%"></div></div>
+    <div class="prob-legend"><span><i class="dot-bat"></i>{{ result.batting_team }} <b>{{ result.batting_probability }}%</b></span><span><i class="dot-bowl"></i>{{ result.bowling_team }} <b>{{ result.bowling_probability }}%</b></span></div>
+    <div class="match-state"><div><small>SCORE</small><b>{{ result.score }}/{{ result.target }}</b></div><div><small>NEEDED</small><b>{{ result.runs_left }} <small>runs</small></b></div><div><small>BALLS LEFT</small><b>{{ result.balls_left }}</b></div><div><small>WICKETS LEFT</small><b>{{ result.wickets_left }}</b></div></div>
+    <p class="disclaimer">This is a machine-learning estimate, not a guarantee. By Samit</p>
+  </section>
+  {% endif %}
+  <footer><span>BOUNDARYIQ <b>·</b> IPL CHASE PREDICTOR</span><span>BUILT WITH MACHINE LEARNING  AND LOVE </span></footer>
+</main>
+<script>
+  const form = document.getElementById('predict-form');
+  form?.addEventListener('submit', (event) => {
+    const batting = form.elements.batting_team.value;
+    const bowling = form.elements.bowling_team.value;
+    if (batting === bowling) { event.preventDefault(); alert('Choose two different teams.'); }
+  });
+  {% if result %}document.getElementById('result')?.scrollIntoView({behavior:'smooth', block:'center'});{% endif %}
+</script>
+</body></html>
