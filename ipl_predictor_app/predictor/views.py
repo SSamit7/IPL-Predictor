@@ -13,7 +13,6 @@ MODEL_PATH = BASE_DIR / "ipl_model.pkl"
 # the uploaded model. Modern names/new franchises are not silently substituted.
 TEAMS = [
     "Chennai Super Kings",
-    "Deccan Chargers",
     "Kings XI Punjab",
     "Kolkata Knight Riders",
     "Mumbai Indians",
